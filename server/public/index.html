@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloomfield Acquire</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div id="Wrapper">
+        <h1>Let's Play Acquire</h1>
+        <div id="GameBoard"></div>
+        <div id="CurrentPlayer">
+            <div id="CurrentPlayerTiles"></div>
+            <div id="CurrentPlayerStocks"></div>
+            <div id="CurrentPlayerBasket"></div>
+        </div>
+        <div id="GameplayElements">
+            <div id="PlayersContainer">
+                <form name="AddPlayer" id="AddPlayer">
+                    <h2>Add Players</h2>
+                    <label>
+                        <span>Player Name</span>
+                        <input id="NewPlayerName" type="text">
+                    </label>
+                    <button type="submit">Add</button>
+                </form>
+                <div id="Players"></div>
+            </div>
+            <form class="buttons">
+                <button type="button" class="start-game-btn">Start Game</button>
+                <button type="button" class="end-turn-btn">End Turn</button>
+            </form>
+            <div id="Stocks"></div>
+        </div>
+
+
+        <button onclick="printToDebug()">Refresh Debug</button>
+        <div id="Debug"></div>
+    </div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+
+<script src="index.js"></script>
+
+</html>
