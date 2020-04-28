@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add New Player</title>
+    <link rel="stylesheet" href="../resources/css/style.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <div id="Wrapper">
+      <h1>Create Player Profile</h1>
+      <form name="AddPlayer" id="AddPlayer">
+        <p>Great! Let's get to know you before we let you in the room.</p>
+        <label>
+          <span>Player Name</span>
+          <input id="NewPlayerName" type="text" />
+        </label>
+        <button type="submit">Start</button>
+      </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="../resources/js/cookies.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>

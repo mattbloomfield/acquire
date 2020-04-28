@@ -1,0 +1,32 @@
+#Wrapper {
+  max-width: 650px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 1em;
+  padding-bottom: 5em;
+}
+
+#CurrentGames {
+  display: grid;
+  grid-column-gap: 8px;
+  grid-template-columns: auto auto;
+}
+
+.game {
+  background: #fff;
+  border-radius: 4px;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.game .btn {
+  font-size: 10px;
+  text-transform: uppercase;
+  display: inline-block;
+  margin: 0 8px;
+}
+
+.game a {
+  text-decoration: none;
+  color: #fff;
+}

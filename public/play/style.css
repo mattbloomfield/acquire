@@ -1,0 +1,379 @@
+body {
+  background: hsl(160, 22%, 79%);
+}
+
+.dropdown {
+  position: absolute;
+  background: hsl(161, 100%, 95%);
+  display: inline-block;
+  border: 1px solid hsl(161, 100%, 65%);
+  color: hsl(161, 100%, 35%);
+  box-shadow: 8px 8px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-item {
+  padding: 4px 8px;
+  border-bottom: 1px solid hsl(161, 100%, 65%);
+  transition: 0.2s all;
+}
+.dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 4px 4px 8px 12px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  min-width: 250px;
+  text-align: center;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  padding: 10px;
+}
+
+.modal-body {
+  max-height: 75vh;
+  overflow-y: scroll;
+}
+
+.modal-body img {
+  height: 90px;
+}
+
+.merger-hotels {
+  display: grid;
+  grid-gap: 10px;
+  justify-items: stretch;
+  grid-template-columns: auto auto;
+}
+.merger-hotel-info {
+  position: relative;
+  border-radius: 4px;
+}
+
+.merger-hotel-info ul {
+  padding-left: 0;
+  text-align: left;
+  margin: 8px 16px 8px;
+}
+
+.merger-hotel-info ul li {
+  display: block;
+}
+
+.merger-winner-badge {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+#BoardContainer {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 20px;
+}
+
+#CurrentPlayer {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#GameBoard {
+  vertical-align: top;
+  display: inline-grid;
+  grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto;
+  grid-gap: 10px 10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: hsl(160, 18%, 67%);
+  box-shadow: 8px 8px 23px hsl(160, 18%, 57%), -8px -8px 23px hsl(160, 18%, 87%);
+  margin: 10px;
+}
+
+.board-tile {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: hsl(160, 25%, 67%);
+  box-shadow: inset 4px 4px 7px hsl(160, 25%, 57%),
+    inset -4px -4px 7px hsl(160, 25%, 37%);
+  color: #c0f1c8;
+  /* cursor: pointer; */
+}
+
+.board-tile-filled {
+  border-radius: 4px;
+  background: hsl(160, 5%, 27%);
+  box-shadow: 4px 4px 4px #26453b;
+}
+
+.board-tile.hovered {
+  background: hsl(160, 5%, 47%);
+}
+
+#PlayersContainer {
+  background: hsl(161, 100%, 35%);
+  padding: 12px;
+  border-radius: 4px;
+  margin: 12px;
+}
+
+.player-container {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+}
+
+.player-container input {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  background: hsl(161, 100%, 95%);
+  margin: 8px;
+  text-align: center;
+  border-radius: 4px;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+  border: 2px solid hsl(161, 100%, 95%);
+  color: #aaa;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.player.my-turn {
+  background: #7ea8ea;
+  color: #fff;
+  box-shadow: none;
+}
+
+.player-container [type='radio']:checked + * {
+  border: 2px solid hsl(161, 100%, 65%);
+  color: #333;
+}
+
+#Stocks {
+  margin: 12px;
+}
+
+#Stocks ul {
+  display: inline-grid;
+  vertical-align: top;
+  /* background: hsl(161, 100%, 95%); */
+  /* padding: 8px; */
+  padding: 0 0 0 0;
+  border-radius: 4px;
+  margin: 0;
+  grid-gap: 8px;
+  place-items: center;
+  grid-template-columns: auto auto;
+  align-items: stretch;
+}
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#CurrentPlayer {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#CurrentPlayerStocks ul {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+}
+
+#CurrentPlayerStocks ul li {
+  display: block;
+  padding: 4px 8px;
+}
+
+#CurrentPlayerStocks ul li .shares {
+  float: right;
+}
+
+#CurrentPlayerStocks .sell-btn {
+  float: right;
+  margin-right: 1em;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.player-tiles {
+  display: inline-grid;
+  grid-gap: 10px;
+  grid-template-columns: auto auto auto auto auto auto;
+  place-items: center;
+}
+.player-tiles .player-tile {
+  border-radius: 4px;
+  background: hsl(160, 5%, 27%);
+  box-shadow: 4px 4px 4px #26453b;
+  color: #fff;
+  height: 50px;
+  width: 50px;
+  display: grid;
+  place-items: center;
+}
+
+/** Chat **/
+
+#Chat {
+  display: inline-grid;
+  border: 1px solid #ddd;
+  background: hsl(160, 5%, 27%);
+  padding: 12px;
+  border-radius: 8px;
+  width: 250px;
+}
+
+#ChatHistory {
+  background: #fff;
+  padding: 0 4px;
+  height: 250px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  overflow-y: scroll;
+}
+
+#ChatMessage {
+  display: flex;
+}
+
+#ChatMessageText {
+  background: #fff;
+  box-sizing: border-box;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 16px;
+  height: 56px;
+  margin-right: 5px;
+  width: 100%;
+}
+
+.chat-message {
+  padding: 4px 8px;
+  background: #dadada;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 70%;
+  text-align: left;
+  margin: 0 auto 4px;
+  transition: 0.2s all;
+}
+
+.chat-owner {
+  font-size: 10px;
+  color: #999;
+}
+
+.chat.my-chat {
+  text-align: right;
+}
+
+.chat.my-chat .chat-message {
+  background: #7eb8da;
+}
+
+.chat.my-chat .chat-owner {
+  display: none;
+}
+
+.chat.server-message .chat-message {
+  opacity: 0.5;
+}
+
+.chat.server-message .chat-message:hover {
+  opacity: 1;
+}
+
+/** Hotel Colors **/
+
+.amer {
+  background: #7ea8ea;
+  color: #fff;
+}
+
+.cont {
+  background: #92ddea;
+  color: #25383b;
+}
+
+.world {
+  background: #b6927b;
+  color: #fff;
+}
+
+.fest {
+  background: #5ca860;
+  color: #fff;
+}
+
+.tower {
+  background: #fcebae;
+  color: #363326;
+}
+
+.lux {
+  background: #efc67c;
+  color: #241d12;
+}
+
+.imp {
+  background: #ffa5d8;
+  color: #291a22;
+}
+
+/** Syntax highlighting **/
+
+.debug-container {
+  display: inline-block;
+}
+pre {
+  outline: 1px solid #ccc;
+  font-size: 12px;
+  background: #eaeaea;
+  padding: 5px;
+  margin: 5px;
+  display: inline-block;
+  vertical-align: top;
+}
+.string {
+  color: green;
+}
+.number {
+  color: darkorange;
+}
+.boolean {
+  color: blue;
+}
+.null {
+  color: magenta;
+}
+.key {
+  color: red;
+}

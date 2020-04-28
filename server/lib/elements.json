@@ -1,48 +1,48 @@
 {
   "rows": ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
   "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-  "hotels": [
-    {
+  "hotels": {
+    "amer": {
       "name": "American Properties",
       "id": "amer",
       "color": "#7eb8da",
       "tier": 1
     },
-    {
+    "cont": {
       "name": "Continental Resorts",
       "id": "cont",
       "color": "#92ddea",
       "tier": 2
     },
-    {
+    "world": {
       "name": "Worldwide Properties",
       "id": "world",
       "color": "#c6b29b",
       "tier": 1
     },
-    {
+    "fest": {
       "name": "Festival Properties",
       "id": "fest",
       "color": "#9cb8a0",
       "tier": 1
     },
-    {
+    "tower": {
       "name": "Tower Hotels",
       "id": "tower",
       "color": "#fcebae",
       "tier": 0
     },
-    {
+    "lux": {
       "name": "Luxor Hotels",
       "id": "lux",
       "color": "#efc67c",
       "tier": 0
     },
-    {
+    "imp": {
       "name": "Imperial Resorts",
       "id": "imp",
       "color": "#ffa5d8",
       "tier": 2
     }
-  ]
+  }
 }

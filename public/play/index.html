@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bloomfield Acquire</title>
+    <link rel="stylesheet" href="../resources/css/style.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="Wrapper">
+      <h1>Let's Play Acquire</h1>
+      <div id="BoardContainer">
+        <div id="GameBoard"></div>
+        <div id="PlayersContainer">
+          <h2>Players</h2>
+          <div id="Players"></div>
+        </div>
+
+        <div>
+          <h2>Purchase Stocks (<span id="StockPurchaseCount"></span>/3)</h2>
+          <div id="Stocks"></div>
+        </div>
+      </div>
+
+      <div id="CurrentPlayer">
+        <form class="buttons">
+          <button
+            id="StartGameButton"
+            type="button"
+            class="start-game-btn btn btn-primary"
+          >
+            Start Game
+          </button>
+          <button
+            id="EndTurnButton"
+            type="button"
+            class="end-turn-btn btn btn-primary"
+          >
+            End Turn
+          </button>
+          <button
+            id="EndGameButton"
+            type="button"
+            class="end-game-btn"
+            style="display: none;"
+          >
+            End Game
+          </button>
+          <a class="btn" href="/rules" target="_blank">Rules</a>
+          <a class="btn" href="/">Go to Lobby</a>
+        </form>
+        <div>
+          <h2>My Tiles</h2>
+          <div id="CurrentPlayerTiles"></div>
+        </div>
+        <div>
+          <h2>My Stocks</h2>
+          <div id="CurrentPlayerStocks"></div>
+        </div>
+        <div id="Chat">
+          <div id="ChatHistory"></div>
+          <form id="ChatMessage">
+            <textarea id="ChatMessageText" name="message"></textarea>
+            <button class="btn btn-primary chat-send-btn" type="submit">
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div id="Debug"></div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src="../resources/js/cookies.js"></script>
+  <script src="../resources/js/dom.js"></script>
+  <script src="index.js"></script>
+</html>

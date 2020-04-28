@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lobby | Bloomfield Acquire</title>
+    <link rel="stylesheet" href="./resources/css/style.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <div id="Wrapper">
+      <h1>Acquire Lobby</h1>
+      <p>
+        Welcome to the lobby! Here is where you can create new games and delete
+        old ones. To be honest, I'm pretty sure you can't play multiple games at
+        once without interference. But you could give it a try!
+      </p>
+      <h2 id="JoinGameHeader">Join a Game</h2>
+      <div id="CurrentGames"></div>
+      <form id="CreateGameForm">
+        <h2>Create a New Game</h2>
+        <label>
+          <span>Server Name</span>
+          <input type="text" name="GameName" id="GameName" />
+          <button type="submit" id="CreateGameBtn">Create</button>
+        </label>
+      </form>
+    </div>
+  </body>
+
+  <script src="./resources/js/dom.js"></script>
+  <script src="index.js"></script>
+</html>

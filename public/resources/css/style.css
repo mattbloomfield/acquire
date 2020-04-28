@@ -1,0 +1,61 @@
+@font-face {
+  font-family: 'Roboto Slab';
+  src: url('../fonts/Roboto_Slab/RobotoSlab-VariableFont_wght.ttf')
+    format('truetype-variations');
+  font-weight: 1 999;
+}
+
+body {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+  font-size: 18px;
+  background: hsl(160, 18%, 67%);
+  font-family: 'Roboto Slab';
+  font-weight: 400;
+  color: #333;
+  position: relative;
+}
+
+#Wrapper {
+  position: relative;
+}
+
+input[type='text'] {
+  font-size: 18px;
+  min-width: 200px;
+  padding: 8px 4px;
+  border: 1px solid hsl(161, 100%, 35%);
+  border-radius: 4px;
+  color: hsl(161, 100%, 15%);
+}
+
+input[type='button'],
+button,
+.btn {
+  font-size: 18px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: hsl(161, 100%, 15%);
+  border: 1px solid hsl(161, 100%, 15%);
+  cursor: pointer;
+  background: #fff;
+  text-decoration: none;
+  line-height: 1em;
+  display: inline-block;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: hsl(161, 100%, 35%);
+  color: #fff;
+  border-color: #fff;
+}
+
+.btn-danger {
+  border-color: transparent;
+  color: hsl(161, 100%, 35%);
+}
+
+h1 {
+  text-align: center;
+}
