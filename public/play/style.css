@@ -2,6 +2,72 @@ body {
   background: hsl(160, 22%, 79%);
 }
 
+#Wrapper {
+  display: grid;
+  grid-template-areas:
+    'header header header header'
+    'board board board buttons'
+    'board board board player_tiles'
+    'board board board player_stocks'
+    'players stocks stocks chat';
+  grid-template-columns: auto auto auto auto;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  grid-area: header;
+}
+
+#GameBoardContainer {
+  grid-area: board;
+  display: grid;
+  place-items: center;
+}
+
+#PlayersContainer {
+  grid-area: players;
+}
+
+#StocksContainer {
+  grid-area: stocks;
+}
+
+#CurrentPlayer {
+  grid-area: player;
+}
+#GameButtons {
+  grid-area: buttons;
+}
+#PlayerTilesContainer {
+  grid-area: player_tiles;
+}
+#PlayerStocksContainer {
+  grid-area: player_stocks;
+}
+#ChatContainer {
+  grid-area: chat;
+}
+#Debug {
+  grid-area: debug;
+}
+
+span#IsCurrentTurn {
+  display: inline-block;
+  height: 100px;
+  width: 0;
+  background: url(https://i.imgur.com/OGeV1rZ.gif);
+  background-size: cover;
+  background-position: center;
+  margin-bottom: -85px;
+  font-size: 10px;
+  color: red;
+  overflow: hidden;
+  transition: 0.2s all;
+}
+
+/*Dropdown and modal styling */
+
 .dropdown {
   position: absolute;
   background: hsl(161, 100%, 95%);
@@ -77,6 +143,8 @@ body {
   text-transform: uppercase;
 }
 
+/* Board */
+
 #BoardContainer {
   display: inline-block;
   vertical-align: top;
@@ -121,13 +189,6 @@ body {
 
 .board-tile.hovered {
   background: hsl(160, 5%, 47%);
-}
-
-#PlayersContainer {
-  background: hsl(161, 100%, 35%);
-  padding: 12px;
-  border-radius: 4px;
-  margin: 12px;
 }
 
 .player-container {
@@ -196,9 +257,10 @@ body {
   box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-#CurrentPlayer {
-  display: inline-block;
-  vertical-align: top;
+#ToggleAllPlayerStock {
+  float: right;
+  font-size: 14px;
+  margin-top: 3em;
 }
 
 #CurrentPlayerStocks ul {
@@ -223,6 +285,14 @@ body {
   text-transform: uppercase;
 }
 
+.all-players h3 {
+  margin-bottom: 0;
+}
+
+.all-players ul {
+  margin: 0;
+}
+
 .player-tiles {
   display: inline-grid;
   grid-gap: 10px;
@@ -238,6 +308,12 @@ body {
   width: 50px;
   display: grid;
   place-items: center;
+}
+
+#TilesToggle {
+  float: right;
+  font-size: 14px;
+  margin-top: 3em;
 }
 
 /** Chat **/
@@ -376,4 +452,32 @@ pre {
 }
 .key {
   color: red;
+}
+
+@media (max-width: 667px) {
+  #Wrapper {
+    font-size: 15px;
+    display: flex;
+    flex-direction: column;
+    /* grid-template-columns: auto auto auto auto; */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1em;
+  }
+  #GameBoardContainer,
+  #ChatContainer,
+  #PlayersContainer {
+    display: none;
+  }
+  #CurrentPlayerStocks ul {
+    display: grid;
+    grid-template-columns: auto auto;
+  }
+  #Stocks ul {
+    grid-template-columns: auto auto auto;
+  }
+}
+
+.hidden {
+  display: none;
 }

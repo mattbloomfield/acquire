@@ -3,62 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bloomfield Acquire</title>
+    <title>Play | Bloomfield Acquire</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="../resources/css/style.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
     <div id="Wrapper">
-      <h1>Let's Play Acquire</h1>
-      <div id="BoardContainer">
+      <h1>
+        <span id="IsCurrentTurn">It's... Your turn.</span>Let's Play Acquire
+      </h1>
+      <div id="GameBoardContainer">
         <div id="GameBoard"></div>
-        <div id="PlayersContainer">
-          <h2>Players</h2>
-          <div id="Players"></div>
-        </div>
-
-        <div>
-          <h2>Purchase Stocks (<span id="StockPurchaseCount"></span>/3)</h2>
-          <div id="Stocks"></div>
-        </div>
+      </div>
+      <div id="PlayersContainer">
+        <h2>Players</h2>
+        <div id="Players"></div>
       </div>
 
-      <div id="CurrentPlayer">
-        <form class="buttons">
-          <button
-            id="StartGameButton"
-            type="button"
-            class="start-game-btn btn btn-primary"
-          >
-            Start Game
-          </button>
-          <button
-            id="EndTurnButton"
-            type="button"
-            class="end-turn-btn btn btn-primary"
-          >
-            End Turn
-          </button>
-          <button
-            id="EndGameButton"
-            type="button"
-            class="end-game-btn"
-            style="display: none;"
-          >
-            End Game
-          </button>
-          <a class="btn" href="/rules" target="_blank">Rules</a>
-          <a class="btn" href="/">Go to Lobby</a>
-        </form>
-        <div>
-          <h2>My Tiles</h2>
-          <div id="CurrentPlayerTiles"></div>
-        </div>
-        <div>
-          <h2>My Stocks</h2>
-          <div id="CurrentPlayerStocks"></div>
-        </div>
+      <form class="buttons" id="GameButtons">
+        <button
+          id="StartGameButton"
+          type="button"
+          class="start-game-btn btn btn-primary"
+        >
+          Start Game
+        </button>
+        <button
+          id="EndTurnButton"
+          type="button"
+          class="end-turn-btn btn btn-primary"
+        >
+          End Turn
+        </button>
+        <button
+          id="EndGameButton"
+          type="button"
+          class="end-game-btn"
+          style="display: none;"
+        >
+          End Game
+        </button>
+        <a class="btn" href="/rules" target="_blank">Rules</a>
+        <a class="btn" href="/">Go to Lobby</a>
+      </form>
+
+      <div id="PlayerTilesContainer">
+        <button id="TilesToggle" class="btn btn-link">Show/Hide</button>
+        <h2>My Tiles</h2>
+        <div id="CurrentPlayerTiles"></div>
+      </div>
+      <div id="PlayerStocksContainer">
+        <button id="ToggleAllPlayerStock" class="btn btn-link">
+          Show all Players
+        </button>
+        <h2>My Stocks</h2>
+        <div id="CurrentPlayerStocks"></div>
+      </div>
+
+      <div id="StocksContainer">
+        <h2>Purchase Stocks (<span id="StockPurchaseCount"></span>/3)</h2>
+        <div id="Stocks"></div>
+      </div>
+
+      <div id="ChatContainer">
         <div id="Chat">
           <div id="ChatHistory"></div>
           <form id="ChatMessage">
@@ -69,8 +81,6 @@
           </form>
         </div>
       </div>
-
-      <div id="Debug"></div>
     </div>
   </body>
   <script src="/socket.io/socket.io.js"></script>

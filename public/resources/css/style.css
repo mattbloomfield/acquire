@@ -1,9 +1,9 @@
-@font-face {
+/* @font-face {
   font-family: 'Roboto Slab';
   src: url('../fonts/Roboto_Slab/RobotoSlab-VariableFont_wght.ttf')
     format('truetype-variations');
   font-weight: 1 999;
-}
+} */
 
 body {
   margin: 0 0 0 0;
@@ -43,6 +43,13 @@ button,
   line-height: 1em;
   display: inline-block;
   font-family: inherit;
+}
+
+.btn.btn-link {
+  background: transparent;
+  text-decoration: underline;
+  color: hsl(161, 100%, 15%);
+  border-color: transparent;
 }
 
 .btn-primary {

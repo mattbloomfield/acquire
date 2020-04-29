@@ -32,7 +32,7 @@ const buildGame = (game) => {
   gameInfo.append(gamePlayers);
   const startBtn = createEl('a', {
     href: `/new-player?gameId=${game.id}`,
-    innerHTML: 'Start',
+    innerHTML: 'Join',
     classList: 'btn btn-primary',
   });
   const deleteBtn = createEl('button', {

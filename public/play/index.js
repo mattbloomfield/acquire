@@ -92,10 +92,11 @@ socket.on('game started', (gameEls) => {
 socket.on('turn started', (gameEls) => {
   console.log('turn started', gameEls);
   if (
-    gameEls.turns[gameEls.turns.length - 1].playerId === globalVars.playerId &&
-    globalVars.alertsOn
+    gameEls.turns[gameEls.turns.length - 1].playerId === globalVars.playerId
   ) {
-    alert(`It's your turn`);
+    document.getElementById('IsCurrentTurn').style.width = '100px';
+  } else {
+    document.getElementById('IsCurrentTurn').style.width = '0';
   }
   refreshView(gameEls);
 });
@@ -199,6 +200,8 @@ const refreshView = (gameEls) => {
     }
     document.getElementById('StockPurchaseCount').innerHTML =
       currentTurn.stocks.length;
+  } else {
+    hideEl('EndTurnButton');
   }
   if (gameEls.started) {
     removeEl('StartGameButton');
@@ -218,6 +221,8 @@ const handleBodyClick = (ev) => {
   if (ev.target.matches('.start-game-btn')) return handleStartGameClick(ev);
   if (ev.target.matches('.sell-btn')) return handleSellStock(ev);
   if (ev.target.matches('.end-game-btn')) return handleEndGame(ev);
+  if (ev.target.matches('#TilesToggle')) return handleToggleTiles(ev);
+  if (ev.target.matches('#ToggleAllPlayerStock')) return handleShowAllStock(ev);
   if (getCurrentTurn().playerId !== globalVars.playerId) {
     return;
   } else {
@@ -339,6 +344,31 @@ const handleEndGame = (ev) => {
     playerId: globalVars.playerId,
     gameId: globalVars.gameId,
   });
+};
+
+const handleToggleTiles = (ev) => {
+  ev.preventDefault();
+  document.getElementById('CurrentPlayerTiles').classList.toggle('hidden');
+};
+
+const handleShowAllStock = (ev) => {
+  ev.preventDefault();
+  if (
+    !document
+      .getElementById('CurrentPlayerStocks')
+      .classList.contains('all-players')
+  ) {
+    document.querySelector('#PlayerStocksContainer h2').innerHTML =
+      'All Player Stocks';
+    document.getElementById('ToggleAllPlayerStock').innerHTML =
+      'Show My Stocks';
+    buildAllPlayersStocks();
+  } else {
+    document.querySelector('#PlayerStocksContainer h2').innerHTML = 'My Stocks';
+    document.getElementById('ToggleAllPlayerStock').innerHTML =
+      'Show All Players';
+    buildPlayerStocks();
+  }
 };
 
 /** Right clicks */
@@ -666,8 +696,12 @@ function buildModal(header, content, ackText) {
 }
 
 function buildPlayerStocks(stocks, hotels) {
-  console.log('build player stocks', stocks);
+  if (!stocks) stocks = globalVars.gameEls.stocks;
+  if (!hotels) hotels = globalVars.gameEls.hotels;
   emptyEl('CurrentPlayerStocks');
+  document
+    .getElementById('CurrentPlayerStocks')
+    .classList.remove('all-players');
   const ul = createEl('ul');
   document.getElementById('CurrentPlayerStocks').append(ul);
   for (const hotelId in stocks) {
@@ -692,6 +726,28 @@ function buildPlayerStocks(stocks, hotels) {
   }
 }
 
+function buildAllPlayersStocks() {
+  const players = seeStocksByPlayer();
+  emptyEl('CurrentPlayerStocks');
+  document.getElementById('CurrentPlayerStocks').classList.add('all-players');
+  for (const playerId in players) {
+    const playerMeta = createEl('h3', {
+      innerHTML: players[playerId].name,
+    });
+    const ul = createEl('ul');
+    document.getElementById('CurrentPlayerStocks').append(playerMeta);
+    document.getElementById('CurrentPlayerStocks').append(ul);
+    for (const hotelId in players[playerId].stocks) {
+      const hotel = globalVars.gameEls.hotels[hotelId];
+      const hotelEl = createEl('li', {
+        classList: `stock-current-player ${hotelId}`,
+        innerHTML: `<b>${hotel.name}</b> <span class="shares">${players[playerId].stocks[hotelId].length} shares</span>`,
+      });
+      ul.append(hotelEl);
+    }
+  }
+}
+
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 //////////////////////       HELPERS      ///////////////////////////
@@ -704,6 +760,14 @@ function objToArr(obj) {
     arr.push(obj[prop]);
   }
   return arr;
+}
+
+function arrToObj(arr, key) {
+  const obj = {};
+  arr.forEach((el) => {
+    obj[el[key]] = JSON.parse(JSON.stringify(el));
+  });
+  return obj;
 }
 
 function getPlayerTiles(tiles, playerId) {
@@ -739,6 +803,24 @@ function getPlayerById(playerId) {
     player: null,
     index: null,
   };
+}
+
+function seeStocksByPlayer() {
+  const players = arrToObj(globalVars.gameEls.players, 'id');
+  console.log('playersObj', players);
+  const stocks = globalVars.gameEls.stocks;
+  for (const hotelId in stocks) {
+    stocks[hotelId].forEach((stock) => {
+      console.log('stock', stock);
+      if (stock._owner) {
+        if (!players[stock._owner].stocks) players[stock._owner].stocks = {};
+        if (!players[stock._owner].stocks[hotelId])
+          players[stock._owner].stocks[hotelId] = [];
+        players[stock._owner].stocks[hotelId].push(stock);
+      }
+    });
+  }
+  return players;
 }
 
 function getCurrentTurn() {
