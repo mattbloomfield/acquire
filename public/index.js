@@ -17,7 +17,7 @@ const buildGame = (game) => {
     classList: 'game',
     id: `Game_${game.id}`,
   });
-  if (game.started) {
+  if (game.status == 'started') {
     gameEl.classList.add('started');
   }
   const gameInfo = createEl('div');

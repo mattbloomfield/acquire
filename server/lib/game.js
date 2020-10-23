@@ -66,7 +66,7 @@ const rehydrateGame = (gameId) => {
         g.tiles,
         g.hotels,
         g.stocks,
-        g.started,
+        g.status,
         g.turns
       );
 

@@ -6,6 +6,7 @@ class Player {
     this.name = name;
     this.socketId = socketId;
     this.id = id || `player_${randomId}`;
+    this.dollars = 4000;
   }
 
   // get tiles() {

@@ -20,9 +20,13 @@
 
 const socket = io();
 const globalVars = {
+  preferences: {},
   gameEls: {},
   playerId: '',
   gameId: '',
+  sounds: {
+    alert: new Sound('insight.mp3'),
+  },
 };
 
 const init = () => {
@@ -95,6 +99,7 @@ socket.on('turn started', (gameEls) => {
     gameEls.turns[gameEls.turns.length - 1].playerId === globalVars.playerId
   ) {
     document.getElementById('IsCurrentTurn').style.width = '100px';
+    globalVars.sounds.alert.play();
   } else {
     document.getElementById('IsCurrentTurn').style.width = '0';
   }
@@ -106,11 +111,26 @@ socket.on('decide tile hotel', (gameEls) => {
   handleHotelDecision(gameEls.tileId, gameEls.hotels);
 });
 
+socket.on('choose winner', (gameEls) => {
+  console.log('handle merger', gameEls);
+  refreshView(gameEls.game);
+  handleChoosingWinner(
+    gameEls.associations,
+    gameEls.tileId,
+    gameEls.playerId,
+    gameEls.winner,
+    gameEls.tieExists,
+    gameEls.sizes
+  );
+});
+
 // tile placement resulted in a merger.
 // build the UI locally to handle that merger
 // all other players will receive a "merger in progress" message instead
+
 socket.on('handle merger', (gameEls) => {
   console.log('handle merger', gameEls);
+  refreshView(gameEls.game);
   handleMerger(
     gameEls.associations,
     gameEls.tileId,
@@ -191,7 +211,6 @@ const refreshView = (gameEls) => {
   buildBoard(objToArr(gameEls.tiles));
   buildPlayers(gameEls.players, currentTurn, gameEls.tiles);
   buildStocks(gameEls.stocks, gameEls.hotels);
-  buildPlayerStocks(gameEls.stocks, gameEls.hotels);
   if (currentTurn) {
     if (currentTurn.playerId !== globalVars.playerId) {
       hideEl('EndTurnButton');
@@ -203,7 +222,7 @@ const refreshView = (gameEls) => {
   } else {
     hideEl('EndTurnButton');
   }
-  if (gameEls.started) {
+  if (gameEls.status == 'started') {
     removeEl('StartGameButton');
     showEl('EndGameButton');
   }
@@ -219,14 +238,18 @@ const handleBodyClick = (ev) => {
   // if (ev.target.matches('.board-tile')) return handleTileClick(ev, 'board');
   if (ev.target.matches('.modal-ack-button')) return handleModalAckClick(ev);
   if (ev.target.matches('.start-game-btn')) return handleStartGameClick(ev);
-  if (ev.target.matches('.sell-btn')) return handleSellStock(ev);
   if (ev.target.matches('.end-game-btn')) return handleEndGame(ev);
   if (ev.target.matches('#TilesToggle')) return handleToggleTiles(ev);
   if (ev.target.matches('#ToggleAllPlayerStock')) return handleShowAllStock(ev);
-  if (getCurrentTurn().playerId !== globalVars.playerId) {
+  if (globalVars.status === 'merging') {
+    if (ev.target.matches('.stock-sell-btn')) return handleSellStock(ev);
+    if (ev.target.matches('.stock-purchase-btn'))
+      return handleStockPurchase(ev);
+  } else if (getCurrentTurn().playerId !== globalVars.playerId) {
     return;
   } else {
     if (ev.target.matches('.player-tile')) return handleTileClick(ev, 'hand');
+    if (ev.target.matches('.stock-sell-btn')) return handleSellStock(ev);
     if (ev.target.matches('.stock-purchase-btn'))
       return handleStockPurchase(ev);
     if (ev.target.matches('.dropdown-item'))
@@ -249,7 +272,7 @@ const handleTileClick = (ev, location) => {
 
 const handleStockPurchase = (ev) => {
   ev.preventDefault();
-  const hotelId = ev.target.dataset.hotel;
+  const hotelId = ev.target.dataset.hotelId;
   console.log('purchased stock in %s', hotelId);
   socket.emit('purchase stock', {
     playerId: globalVars.playerId,
@@ -288,10 +311,12 @@ const handleModalAckClick = (ev) => {
 };
 
 const handleMergeWinnerClick = (ev) => {
-  const hotel = ev.target.value;
+  const hotelId = ev.target.value;
   const tileId = ev.target.dataset.tileId;
-  socket.emit('merger complete', {
-    winner: hotel,
+  //TODO: Shouldn't send a 'merger-complete' message. Should just update everyone else's UI.
+  // No one else should get a modal until the winner is decided
+  socket.emit('initiate merger', {
+    winner: hotelId,
     tileId: tileId,
     playerId: globalVars.playerId,
     gameId: globalVars.gameId,
@@ -351,26 +376,6 @@ const handleToggleTiles = (ev) => {
   document.getElementById('CurrentPlayerTiles').classList.toggle('hidden');
 };
 
-const handleShowAllStock = (ev) => {
-  ev.preventDefault();
-  if (
-    !document
-      .getElementById('CurrentPlayerStocks')
-      .classList.contains('all-players')
-  ) {
-    document.querySelector('#PlayerStocksContainer h2').innerHTML =
-      'All Player Stocks';
-    document.getElementById('ToggleAllPlayerStock').innerHTML =
-      'Show My Stocks';
-    buildAllPlayersStocks();
-  } else {
-    document.querySelector('#PlayerStocksContainer h2').innerHTML = 'My Stocks';
-    document.getElementById('ToggleAllPlayerStock').innerHTML =
-      'Show All Players';
-    buildPlayerStocks();
-  }
-};
-
 /** Right clicks */
 
 const handleTileRightClick = (ev) => {
@@ -406,7 +411,7 @@ const handleMouseLeave = (ev) => {
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
 
-function handleMerger(
+function handleChoosingWinner(
   associations,
   tileId,
   playerId,
@@ -415,19 +420,12 @@ function handleMerger(
   sizes
 ) {
   const bodyEl = createEl('div');
-  const introImg = createEl('img', {
-    src: 'https://media.giphy.com/media/IB9foBA4PVkKA/giphy.gif',
-  });
   const introEl = createEl('p', {});
   let modalHeader;
-  if (tileId) {
-    modalHeader = `It's Peanut Butter Merging Time!!`;
-    introEl.innerHTML =
-      'By placing a tile here a merger has been created. After you have divied out the cash, advance through this screen to continue';
-  } else {
-    introEl.innerHTML = `Use the prices below to help you finish out the game`;
-    modalHeader = `Game Over Dude...`;
-  }
+  modalHeader = `Choose your winner`;
+  ackText = 'Done';
+  introEl.innerHTML = 'This merger is a tie. Choose who you think should win!';
+
   const mergerInfoEl = createEl('div', {
     classList: 'merger-hotels',
   });
@@ -445,6 +443,8 @@ function handleMerger(
     const sizeEl = createEl('li', {
       innerHTML: `Current Size: ${sizes[hotelId]} tiles`,
     });
+    //TODO: Do some logic here and show the winners and losers by name. Also stocks inline
+    //TODO: Also show the buttons to sell, trade 2:1, or keep.
     const majorityEl = createEl('li', {
       innerHTML: `Majority Payout: $${hotel.majorityPrice || 0}`,
     });
@@ -463,10 +463,107 @@ function handleMerger(
     mergerInfoEl.append(hotelInfoEl);
   });
 
+  bodyEl.append(introEl);
+  bodyEl.append(mergerInfoEl);
+  buildModal(modalHeader, bodyEl, ackText);
+  let html = `<h3>Please pick a winner</h3>`;
+  associations.hotels.forEach((hotelId) => {
+    html += `<button value="${hotelId}" data-tile-id="${tileId}" class="merge-winner-btn">${globalVars.gameEls.hotels[hotelId].name}</button>`;
+  });
+  document.querySelector(`.modal-body`).append(
+    createEl('p', {
+      innerHTML: html,
+    })
+  );
+}
+
+function handleMerger(
+  associations,
+  tileId,
+  playerId,
+  winner,
+  tieExists,
+  sizes
+) {
+  const bodyEl = createEl('div');
+  const introImg = createEl('img', {
+    src: 'https://media.giphy.com/media/IB9foBA4PVkKA/giphy.gif',
+  });
+  const introEl = createEl('p', {});
+  let modalHeader;
+  if (tileId) {
+    modalHeader = `It's Peanut Butter Merging Time!!`;
+    ackText = 'Merge is Complete';
+    introEl.innerHTML =
+      'By placing a tile here a merger has been created. After you have divied out the cash, advance through this screen to continue';
+  } else {
+    introEl.innerHTML = `Use the prices below to help you finish out the game`;
+    modalHeader = `Game Over Dude...`;
+    ackText = 'Finish the Game';
+  }
+  const mergerInfoEl = createEl('div', {
+    classList: 'merger-hotels',
+  });
+
+  const stockWinners = getStockWinners();
+
+  associations.hotels.forEach((hotelId) => {
+    const hotel = globalVars.gameEls.hotels[hotelId];
+
+    const hotelInfoEl = createEl('div', {
+      classList: `merger-hotel-info ${hotel.id}`,
+    });
+    const hotelHeaderEl = createEl('h3', {
+      innerHTML: hotel.name,
+    });
+    const hotelListEl = createEl('ul');
+    const sizeEl = createEl('li', {
+      innerHTML: `Current Size: ${sizes[hotelId]} tiles`,
+    });
+    //TODO: Do some logic here and show the winners and losers by name. Also stocks inline
+    //TODO: Also show the buttons to sell, trade 2:1, or keep.
+    let majorityEl, minorityEl;
+    const majorityWinners = stockWinners[hotelId].majority.map(
+      (playerId) => getPlayerById(playerId).player.name
+    );
+    if (majorityWinners.length > 1 || minorityWinners.length == 0) {
+      majorityEl = createEl('li', {
+        innerHTML: `Majority Payout: $${
+          (hotel.majorityPrice + hotel.minorityPrice) /
+            majorityWinners.length || 0
+        } (${majorityWinners.join(', ')})`,
+      });
+    } else {
+      const minorityWinners = stockWinners[hotelId].minority.map(
+        (playerId) => getPlayerById(playerId).player.name
+      );
+      majorityEl = createEl('li', {
+        innerHTML: `Majority Payout: $${hotel.majorityPrice || 0} (${
+          majorityWinners[0]
+        })`,
+      });
+      minorityEl = createEl('li', {
+        innerHTML: `Minority Payout: $${
+          hotel.minorityPrice / minorityWinners.length || 0
+        } (${minorityWinners.join(', ')})`,
+      });
+    }
+    const stockEl = createEl('li', {
+      innerHTML: `Stock Price: $${hotel.stockPrice || 0}`,
+    });
+    hotelListEl.append(sizeEl);
+    hotelListEl.append(majorityEl);
+    if (minorityEl) hotelListEl.append(minorityEl);
+    hotelListEl.append(stockEl);
+    hotelInfoEl.append(hotelHeaderEl);
+    hotelInfoEl.append(hotelListEl);
+    mergerInfoEl.append(hotelInfoEl);
+  });
+
   bodyEl.append(introImg);
   bodyEl.append(introEl);
   bodyEl.append(mergerInfoEl);
-  buildModal(modalHeader, bodyEl, 'Merge is Complete');
+  buildModal(modalHeader, bodyEl, ackText);
   if (!tieExists) {
     const badge = createEl('div', {
       innerHTML: 'Winner',
@@ -601,42 +698,6 @@ function buildPlayers(players = [], currentTurn, tiles) {
   });
 }
 
-function buildStocks(stocks = {}, hotels = {}) {
-  console.log('rebuilding stocks');
-  emptyEl('Stocks');
-  const ul = createEl('ul');
-  document.getElementById('Stocks').append(ul);
-  for (deck in stocks) {
-    const hotel = hotels[deck];
-    const count = stocks[deck].filter((stock) => !stock._owner).length;
-    const deckEl = createEl('li', {
-      classList: `deck ${deck}`,
-    });
-    const nameEl = createEl('h3', {
-      innerHTML: hotel.name,
-    });
-    const countEl = createEl('p', {
-      innerHTML: `${count} shares remaining`,
-    });
-    const buttonEl = createEl(
-      'button',
-      {
-        innerHTML: `Purchase Stock for $${hotel.stockPrice}`,
-        classList: 'stock-purchase-btn',
-      },
-      {
-        'data-hotel': deck,
-      }
-    );
-    deckEl.append(nameEl);
-    deckEl.append(countEl);
-    // check if active
-    if (hotel.active && getCurrentTurn().playerId === globalVars.playerId)
-      deckEl.append(buttonEl);
-    ul.append(deckEl);
-  }
-}
-
 function buildDropdown(x = 0, y = 0, tileId = null, hotels) {
   removeEl('Dropdown');
   const dropdownEl = createEl(
@@ -650,7 +711,7 @@ function buildDropdown(x = 0, y = 0, tileId = null, hotels) {
   });
   dropdownEl.append(header);
   hotels =
-    hotels ||
+    hotels.sort((a, b) => a.tier - b.tier) ||
     objToArr(globalVars.gameEls.hotels).sort((a, b) => a.tier - b.tier);
   hotels.forEach((hotel) => {
     const option = createEl(
@@ -680,8 +741,12 @@ function buildModal(header, content, ackText) {
   const modalHeaderEl = createEl('div', { classList: 'modal-header' });
   const headerEl = createEl('h2', { innerHTML: header });
   modalHeaderEl.append(headerEl);
-  const modalBodyEl = createEl('div', { classList: 'modal-body' });
+  const modalBodyEl = createEl('div', {
+    classList: 'modal-body',
+    id: 'ModalBody',
+  });
   modalBodyEl.append(content);
+
   const modalFooterEl = createEl('div', { classList: 'modal-footer' });
   const modalAckBtn = createEl('button', {
     type: 'submit',
@@ -693,56 +758,51 @@ function buildModal(header, content, ackText) {
   modalEl.append(modalBodyEl);
   modalEl.append(modalFooterEl);
   document.getElementById('Wrapper').append(modalEl);
+  buildStocks(null, null, 'ModalBody');
 }
 
-function buildPlayerStocks(stocks, hotels) {
-  if (!stocks) stocks = globalVars.gameEls.stocks;
+function buildStocks(stocks, hotels, location = 'CurrentPlayerStocks') {
   if (!hotels) hotels = globalVars.gameEls.hotels;
-  emptyEl('CurrentPlayerStocks');
-  document
-    .getElementById('CurrentPlayerStocks')
-    .classList.remove('all-players');
-  const ul = createEl('ul');
-  document.getElementById('CurrentPlayerStocks').append(ul);
-  for (const hotelId in stocks) {
-    const hotel = hotels[hotelId];
-    let shares = 0;
-    stocks[hotelId].forEach((stock) => {
-      if (stock._owner && stock._owner === globalVars.playerId) {
-        shares++;
-      }
-    });
-    const hotelEl = createEl('li', {
-      classList: `stock-current-player ${hotelId}`,
-      innerHTML: `<b>${hotel.name}</b>: <span class="shares">${shares} shares</span>`,
-    });
-    const sellBtn = createEl(
-      'button',
-      { innerHTML: 'Sell', classList: `sell-btn` },
-      { 'data-hotel-id': hotelId }
-    );
-    hotelEl.append(sellBtn);
-    ul.append(hotelEl);
-  }
-}
-
-function buildAllPlayersStocks() {
+  if (!stocks)
+    (stocks = globalVars.gameEls.stocks),
+      console.log('building stocks', hotels);
   const players = seeStocksByPlayer();
-  emptyEl('CurrentPlayerStocks');
-  document.getElementById('CurrentPlayerStocks').classList.add('all-players');
+  if (location === 'CurrentPlayerStocks') emptyEl(location);
+  document.getElementById(location).classList.add('all-players');
   for (const playerId in players) {
     const playerMeta = createEl('h3', {
       innerHTML: players[playerId].name,
     });
+    const container = createEl('div', { classList: 'stock-view' });
     const ul = createEl('ul');
-    document.getElementById('CurrentPlayerStocks').append(playerMeta);
-    document.getElementById('CurrentPlayerStocks').append(ul);
+    container.append(ul);
+    document.getElementById(location).append(playerMeta);
+    document.getElementById(location).append(container);
     for (const hotelId in players[playerId].stocks) {
-      const hotel = globalVars.gameEls.hotels[hotelId];
+      const hotel = hotels[hotelId];
+      const count = stocks[hotelId].filter((stock) => !stock._owner).length;
       const hotelEl = createEl('li', {
         classList: `stock-current-player ${hotelId}`,
-        innerHTML: `<b>${hotel.name}</b> <span class="shares">${players[playerId].stocks[hotelId].length} shares</span>`,
+        innerHTML: `<b>${hotel.name}</b> <span class="shares">${players[playerId].stocks[hotelId].length} shares (${count} remain)</span>`,
       });
+      const sellBtn = createEl(
+        'button',
+        { innerHTML: 'Sell', classList: `stock-sell-btn` },
+        { 'data-hotel-id': hotelId }
+      );
+      const purchaseBtn = createEl(
+        'button',
+        {
+          innerHTML: `$${hotel.stockPrice || 0}`,
+          classList: `stock-purchase-btn`,
+        },
+        { 'data-hotel-id': hotelId }
+      );
+      if (!hotel.stockPrice) {
+        purchaseBtn.setAttribute('disabled', 'disabled');
+      }
+      if (playerId === globalVars.playerId) hotelEl.append(sellBtn);
+      if (playerId === globalVars.playerId) hotelEl.append(purchaseBtn);
       ul.append(hotelEl);
     }
   }
@@ -807,11 +867,9 @@ function getPlayerById(playerId) {
 
 function seeStocksByPlayer() {
   const players = arrToObj(globalVars.gameEls.players, 'id');
-  console.log('playersObj', players);
   const stocks = globalVars.gameEls.stocks;
   for (const hotelId in stocks) {
     stocks[hotelId].forEach((stock) => {
-      console.log('stock', stock);
       if (stock._owner) {
         if (!players[stock._owner].stocks) players[stock._owner].stocks = {};
         if (!players[stock._owner].stocks[hotelId])
@@ -823,8 +881,60 @@ function seeStocksByPlayer() {
   return players;
 }
 
+function getStockWinners() {
+  const playerStocks = seeStocksByPlayer();
+  const winners = {};
+  for (const playerId in playerStocks) {
+    for (const hotelId in playerStocks[playerId].stocks) {
+      if (!winners[hotelId])
+        winners[hotelId] = {
+          majority: [],
+          minority: [],
+          majorityAmount: 0,
+          minorityAmount: 0,
+        };
+      if (
+        playerStocks[playerId].stocks[hotelId].length >
+        winners[hotelId].majorityAmount
+      ) {
+        winners[hotelId].majorityAmount =
+          playerStocks[playerId].stocks[hotelId].length;
+        winners[hotelId].majority = [playerId];
+      } else if (
+        playerStocks[playerId].stocks[hotelId].length ===
+        winners[hotelId].minorityAmount
+      ) {
+        winners[hotelId].minority.push(playerId);
+      } else if (
+        playerStocks[playerId].stocks[hotelId].length >
+        winners[hotelId].minorityAmount
+      ) {
+        winners[hotelId].minorityAmount =
+          playerStocks[playerId].stocks[hotelId].length;
+        winners[hotelId].minority = [playerId];
+      }
+    }
+  }
+  return winners;
+}
+
 function getCurrentTurn() {
   return globalVars.gameEls.turns[globalVars.gameEls.turns.length - 1];
+}
+
+function Sound(src) {
+  this.sound = document.createElement('audio');
+  this.sound.src = src;
+  this.sound.setAttribute('preload', 'auto');
+  this.sound.setAttribute('controls', 'none');
+  this.sound.style.display = 'none';
+  document.body.appendChild(this.sound);
+  this.play = function () {
+    this.sound.play();
+  };
+  this.stop = function () {
+    this.sound.pause();
+  };
 }
 
 /////////////////////////////////////////////////////////////////////

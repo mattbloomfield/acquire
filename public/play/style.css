@@ -8,8 +8,8 @@ body {
     'header header header header'
     'board board board buttons'
     'board board board player_tiles'
-    'board board board player_stocks'
-    'players stocks stocks chat';
+    'board board board chat'
+    'players player_stocks player_stocks .';
   grid-template-columns: auto auto auto auto;
   max-width: 1200px;
   margin: 0 auto;
@@ -27,10 +27,6 @@ h1 {
 
 #PlayersContainer {
   grid-area: players;
-}
-
-#StocksContainer {
-  grid-area: stocks;
 }
 
 #CurrentPlayer {
@@ -229,24 +225,6 @@ span#IsCurrentTurn {
   color: #333;
 }
 
-#Stocks {
-  margin: 12px;
-}
-
-#Stocks ul {
-  display: inline-grid;
-  vertical-align: top;
-  /* background: hsl(161, 100%, 95%); */
-  /* padding: 8px; */
-  padding: 0 0 0 0;
-  border-radius: 4px;
-  margin: 0;
-  grid-gap: 8px;
-  place-items: center;
-  grid-template-columns: auto auto;
-  align-items: stretch;
-}
-
 .deck {
   display: flex;
   flex-direction: column;
@@ -263,22 +241,30 @@ span#IsCurrentTurn {
   margin-top: 3em;
 }
 
-#CurrentPlayerStocks ul {
+.stock-view ul {
   display: flex;
   flex-direction: column;
   padding-left: 0;
 }
 
-#CurrentPlayerStocks ul li {
+.stock-view ul li {
   display: block;
   padding: 4px 8px;
+  font-size: 14px;
 }
 
-#CurrentPlayerStocks ul li .shares {
+.stock-view ul li .shares {
   float: right;
 }
 
-#CurrentPlayerStocks .sell-btn {
+.stock-view .stock-sell-btn {
+  float: right;
+  margin-right: 1em;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.stock-view .stock-purchase-btn {
   float: right;
   margin-right: 1em;
   font-size: 10px;

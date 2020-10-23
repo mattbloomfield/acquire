@@ -8,7 +8,7 @@ app.get('/game', async (req, res) => {
     gameArr.push({
       name: games[gameId].name,
       id: gameId,
-      started: games[gameId].started,
+      status: games[gameId].status,
       players: games[gameId].players.length,
     });
   }

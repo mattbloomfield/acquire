@@ -16,6 +16,7 @@ const {
   onStockPurchase,
   onStockSell,
   onNewMessage,
+  onMergerInitiation,
   onStartGame,
   onEndGame,
   onEndTurn,
@@ -40,7 +41,7 @@ io.on('connection', (socket) => {
     onPlayerConnect(socket, gameInfo);
   });
 
-  // set game.started = true and broadcast to all players
+  // set game.status = 'started' and broadcast to all players
   // start the first turn
   socket.on('start game', (gameInfo) => {
     onStartGame(socket, gameInfo.gameId, gameInfo.playerId);
@@ -52,6 +53,17 @@ io.on('connection', (socket) => {
   // send a message to all players with updated game
   socket.on('tile played', (gameInfo) => {
     onTilePlay(socket, gameInfo.gameId, gameInfo.tileId, gameInfo.playerId);
+  });
+
+  // only called if there was a tie
+  socket.on('initiate merger', (gameInfo) => {
+    onMergerInitiation(
+      socket,
+      gameInfo.gameId,
+      gameInfo.tileId,
+      gameInfo.playerId,
+      gameInfo.hotelId
+    );
   });
 
   socket.on('hotel choice made', (gameInfo) => {

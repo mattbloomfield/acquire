@@ -73,7 +73,7 @@ const onPlayerConnect = async (socket, gameInfo) => {
 const onStartGame = async (socket, gameId, playerId) => {
   game = await rehydrateGame(gameId);
   await deal(game);
-  game.started = true; // needs to be in constructor
+  game.status = 'started'; // needs to be in constructor
   const turn = new Turn(game.players[0].id);
   game.addTurn(turn);
   saveGame(game);
@@ -83,6 +83,36 @@ const onStartGame = async (socket, gameId, playerId) => {
   io.emit('game started', game);
 };
 
+const onMergerInitiation = async (
+  socket,
+  gameId,
+  tileId,
+  playerId,
+  hotelId
+) => {
+  const game = await rehydrateGame(gameId);
+  const tile = game.tiles[tileId];
+  const tileHotels = game.tileHotels;
+  const associations = decideTileAssociations(tile, game.tiles);
+  const sizes = {};
+
+  associations.hotels.forEach((hotelId) => {
+    const hotelTiles = tileHotels[hotelId] || {};
+    sizes[hotelId] = Object.keys(hotelTiles).length;
+  });
+  game.status = 'merging';
+  await saveGame(game);
+  io.emit('handle merger', {
+    game,
+    associations,
+    tileId,
+    playerId,
+    hotelId,
+    tieExists: false,
+    sizes,
+  });
+};
+
 const onTilePlay = async (socket, gameId, tileId, playerId) => {
   console.log('handling tile play', tileId);
   // rehydrate things
@@ -90,7 +120,7 @@ const onTilePlay = async (socket, gameId, tileId, playerId) => {
   const tile = game.tiles[tileId];
   // set the owner
   tile.owner = 'board';
-  const currentTurn = game.turns[game.turns.length - 1];
+  const currentTurn = getCurrentTurn(game);
   if (currentTurn.tileId) {
     socket.emit('game error', {
       message:
@@ -131,7 +161,22 @@ const onTilePlay = async (socket, gameId, tileId, playerId) => {
       });
       return;
     }
+    if (tieExists) {
+      socket.emit('choose winner', {
+        game,
+        associations,
+        tileId,
+        playerId,
+        winner,
+        tieExists,
+        sizes,
+      });
+      return;
+    }
+    game.status = 'merging';
+    await saveGame(game);
     io.emit('handle merger', {
+      game,
       associations,
       tileId,
       playerId,
@@ -164,8 +209,20 @@ const onTilePlay = async (socket, gameId, tileId, playerId) => {
   } else {
     console.log(`it's not a merger or new chain`);
     assignTile(tileId, associations.hotels[0], game.tiles);
+    const activeHotels = [];
+    for (const hotelId in game.hotels) {
+      console.log(hotelId, game.hotels[hotelId]);
+      if (game.hotels[hotelId].active) {
+        activeHotels.push(hotelId);
+      }
+    }
+    if (activeHotels.length === 0) {
+      await switchTurns(game, playerId);
+    }
     await saveGame(game);
-    io.emit('tiles updated', game);
+    // this is a hack to get the updated stock price
+    const refreshedGame = await rehydrateGame(gameId);
+    io.emit('tiles updated', refreshedGame);
   }
   sendMessage(
     `${getPlayerById(game.players, playerId).player.name} has played ${
@@ -198,6 +255,16 @@ const onHotelChoice = async (socket, gameId, tileId, playerId, hotelId) => {
 
 const onMergerComplete = async (socket, gameId, playerId, winner, tileId) => {
   const game = await rehydrateGame(gameId);
+  const currentTurn = getCurrentTurn(game);
+  if (playerId !== currentTurn.playerId) {
+    sendMessage(
+      `${
+        getPlayerById(game.players, playerId).player.name
+      }  finished their merger. `
+    );
+  }
+  // TODO: Add the amounts for majority/minority
+  game.status = 'started';
   assignTile(tileId, winner, game.tiles);
   await saveGame(game);
   io.emit('tiles updated', game);
@@ -211,8 +278,9 @@ const onMergerComplete = async (socket, gameId, playerId, winner, tileId) => {
 const onStockPurchase = async (socket, gameId, playerId, hotelId) => {
   // copied directly from frontend
   const game = await rehydrateGame(gameId);
+  const currentTurn = getCurrentTurn(game);
   const stock = purchaseStock(game, hotelId, playerId);
-  game.turns[game.turns.length - 1].stocks.push(stock);
+  currentTurn.stocks.push(stock);
   await saveGame(game);
   io.emit('stock purchased', game);
   sendMessage(
@@ -220,7 +288,7 @@ const onStockPurchase = async (socket, gameId, playerId, hotelId) => {
       getPlayerById(game.players, playerId).player.name
     } has purchased stock in ${game.hotels[hotelId].name}`
   );
-  if (game.turns[game.turns.length - 1].stocks.length > 2) {
+  if (currentTurn.stocks.length > 2) {
     await switchTurns(game, playerId);
   }
 };
@@ -230,6 +298,7 @@ function purchaseStock(game, hotelId, playerId) {
     const card = game.stocks[hotelId][i];
     if (card.owner) continue;
     card.owner = playerId;
+    // TODO: Remove the amount from the players account
     return card;
   }
 }
@@ -240,6 +309,7 @@ const onStockSell = async (socket, gameId, playerId, hotelId) => {
     const card = game.stocks[hotelId][i];
     if (card.owner === playerId) {
       card.owner = null;
+      // TODO: Add the amount from the players account
       break;
     }
   }
@@ -291,11 +361,16 @@ const onNewMessage = (socket, messageInfo) => {
   sendMessage(messageInfo.message, messageInfo.playerId);
 };
 
+function getCurrentTurn(game) {
+  return game.turns[game.turns.length - 1];
+}
+
 module.exports = {
   onUserConnect,
   onUserDisconnect,
   onPlayerCreated,
   onPlayerConnect,
+  onMergerInitiation,
   onTilePlay,
   onHotelChoice,
   onMergerComplete,

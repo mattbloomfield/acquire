@@ -8,7 +8,7 @@ const Player = require('./Player');
 const Turn = require('./Turn');
 
 class Game {
-  constructor(name, id, players, tiles, hotels, stocks, started, turns) {
+  constructor(name, id, players, tiles, hotels, stocks, status, turns) {
     const tileInputs = tiles || createTiles();
     this.name = name || 'Untitled';
     this.id = id || new Date().getTime();
@@ -16,7 +16,7 @@ class Game {
     this.tiles = initTiles(tileInputs);
     this.hotels = initHotels(hotels, this.tiles);
     this.stocks = initStocks(stocks, this.hotels);
-    this.started = started || null;
+    this.status = status || 'unstarted';
     this.turns = initTurns(turns) || [];
   }
 
@@ -56,7 +56,8 @@ function createTiles() {
 
 function initPlayers(playerInputs = []) {
   return playerInputs.map(
-    (player) => new Player(player.name, player.socketId, player.id)
+    (player) =>
+      new Player(player.name, player.socketId, player.id, player.dollars)
   );
 }
 
